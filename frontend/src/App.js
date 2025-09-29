@@ -1,9 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import './App.css';
+import Navigation from './components/Navigation';
+import Dashboard from './pages/Dashboard';
+import Accounts from './pages/Accounts';
+import Videos from './pages/Videos';
+import Proxies from './pages/Proxies';
+import Telegram from './pages/Telegram';
+import Captcha from './pages/Captcha';
+import Settings from './pages/Settings';
 
 function App() {
   const [backendStatus, setBackendStatus] = useState('Проверка...');
-  const [accounts, setAccounts] = useState([]);
+  const [currentPage, setCurrentPage] = useState('dashboard');
 
   useEffect(() => {
     // Проверяем статус backend
@@ -23,6 +31,27 @@ function App() {
     }
   };
 
+  const renderPage = () => {
+    switch (currentPage) {
+      case 'dashboard':
+        return <Dashboard />;
+      case 'accounts':
+        return <Accounts />;
+      case 'videos':
+        return <Videos />;
+      case 'proxies':
+        return <Proxies />;
+      case 'telegram':
+        return <Telegram />;
+      case 'captcha':
+        return <Captcha />;
+      case 'settings':
+        return <Settings />;
+      default:
+        return <Dashboard />;
+    }
+  };
+
   return (
     <div className="App">
       <header className="App-header">
@@ -39,34 +68,15 @@ function App() {
           </div>
         </div>
 
-        <div className="features-section">
-          <h2>🚀 Возможности</h2>
-          <div className="features-grid">
-            <div className="feature-card">
-              <h3>📧 Gmail аккаунты</h3>
-              <p>Регистрация и прогрев аккаунтов</p>
-            </div>
-            <div className="feature-card">
-              <h3>📱 Telegram уведомления</h3>
-              <p>Логирование и уведомления</p>
-            </div>
-            <div className="feature-card">
-              <h3>🌐 Прокси поддержка</h3>
-              <p>HTTP и SOCKS5 прокси</p>
-            </div>
-            <div className="feature-card">
-              <h3>🎥 Загрузка видео</h3>
-              <p>Shorts и длинные видео</p>
-            </div>
-            <div className="feature-card">
-              <h3>📞 Верификация</h3>
-              <p>Привязка и верификация номеров</p>
-            </div>
-            <div className="feature-card">
-              <h3>🤖 Капча решение</h3>
-              <p>Автоматическое прохождение капчи</p>
-            </div>
-          </div>
+        {/* Navigation */}
+        <Navigation 
+          currentPage={currentPage} 
+          onPageChange={setCurrentPage} 
+        />
+
+        {/* Page Content */}
+        <div className="page-content">
+          {renderPage()}
         </div>
 
         <div className="quick-actions">
@@ -75,10 +85,13 @@ function App() {
             <button className="btn btn-primary" onClick={checkBackendStatus}>
               🔄 Проверить статус
             </button>
-            <button className="btn btn-secondary">
-              📊 Статистика
+            <button className="btn btn-secondary" onClick={() => setCurrentPage('accounts')}>
+              👥 Аккаунты
             </button>
-            <button className="btn btn-secondary">
+            <button className="btn btn-secondary" onClick={() => setCurrentPage('videos')}>
+              🎥 Видео
+            </button>
+            <button className="btn btn-secondary" onClick={() => setCurrentPage('settings')}>
               ⚙️ Настройки
             </button>
           </div>

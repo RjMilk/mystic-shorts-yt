@@ -16,7 +16,7 @@ import {
   Mail
 } from 'lucide-react';
 
-const Accounts: React.FC = () => {
+const Accounts = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [countryFilter, setCountryFilter] = useState('all');

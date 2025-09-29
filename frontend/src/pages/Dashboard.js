@@ -10,7 +10,7 @@ import {
   Upload
 } from 'lucide-react';
 
-const Dashboard: React.FC = () => {
+const Dashboard = () => {
   // Mock data for demonstration
   const stats = {
     totalAccounts: 12,
