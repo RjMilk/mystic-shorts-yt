@@ -2,6 +2,7 @@ const { app, BrowserWindow, Menu, shell, dialog, ipcMain } = require('electron')
 const path = require('path');
 const express = require('express');
 const cors = require('cors');
+const net = require('net');
 const apiServer = require('./api-server');
 
 // Keep a global reference of the window object
@@ -11,9 +12,29 @@ let expressServer;
 // Backend and Frontend ports
 const BACKEND_PORT = 8000;
 const FRONTEND_PORT = 3000;
-const EXPRESS_PORT = 9000;
+let EXPRESS_PORT = 9000;
 
-function createWindow() {
+// Function to find a free port
+function findFreePort(startPort = 9000) {
+  return new Promise((resolve, reject) => {
+    const server = net.createServer();
+    
+    server.listen(startPort, () => {
+      const port = server.address().port;
+      server.close(() => resolve(port));
+    });
+    
+    server.on('error', (err) => {
+      if (err.code === 'EADDRINUSE') {
+        findFreePort(startPort + 1).then(resolve).catch(reject);
+      } else {
+        reject(err);
+      }
+    });
+  });
+}
+
+async function createWindow() {
   // Create the browser window
   mainWindow = new BrowserWindow({
     width: 1400,
@@ -35,7 +56,7 @@ function createWindow() {
   createMenu();
 
   // Start backend and frontend
-  startServices();
+  await startServices();
 
   // Load the app
   mainWindow.loadURL(`http://localhost:${EXPRESS_PORT}`);
@@ -143,14 +164,23 @@ function createMenu() {
   Menu.setApplicationMenu(menu);
 }
 
-function startServices() {
+async function startServices() {
   console.log('🚀 Starting Mystic Shorts YT services...');
 
-  // Start Express server to serve the frontend
-  startExpressServer();
+  try {
+    // Find a free port for Express server
+    EXPRESS_PORT = await findFreePort(9000);
+    console.log(`📡 Using port ${EXPRESS_PORT} for Express server`);
 
-  // Note: Backend and Frontend are now built-in, no external processes needed
-  console.log('✅ All services are built-in and ready!');
+    // Start Express server to serve the frontend
+    startExpressServer();
+
+    // Note: Backend and Frontend are now built-in, no external processes needed
+    console.log('✅ All services are built-in and ready!');
+  } catch (error) {
+    console.error('❌ Error starting services:', error);
+    dialog.showErrorBox('Startup Error', `Failed to start services: ${error.message}`);
+  }
 }
 
 function startExpressServer() {
