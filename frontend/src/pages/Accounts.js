@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Plus, 
   Search, 
@@ -15,73 +15,108 @@ import {
   Phone,
   Mail
 } from 'lucide-react';
+import { accountStorage } from '../utils/storage';
+import AccountForm from '../components/AccountForm';
+import Modal from '../components/Modal';
 
 const Accounts = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [countryFilter, setCountryFilter] = useState('all');
+  const [accounts, setAccounts] = useState([]);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [selectedAccount, setSelectedAccount] = useState(null);
+  const [loading, setLoading] = useState(false);
 
-  // Mock data for demonstration
-  const accounts = [
-    {
-      id: 1,
-      email: 'account1@gmail.com',
-      status: 'active',
-      country: 'US',
-      phone: '+1234567890',
-      lastActivity: '2024-01-15',
-      videos: 5,
-      views: 1250
-    },
-    {
-      id: 2,
-      email: 'account2@gmail.com',
-      status: 'warming_up',
-      country: 'GB',
-      phone: '+44123456789',
-      lastActivity: '2024-01-14',
-      videos: 2,
-      views: 450
-    },
-    {
-      id: 3,
-      email: 'account3@gmail.com',
-      status: 'suspended',
-      country: 'DE',
-      phone: '+49123456789',
-      lastActivity: '2024-01-10',
-      videos: 0,
-      views: 0
-    }
-  ];
+  // Загружаем аккаунты при монтировании компонента
+  useEffect(() => {
+    loadAccounts();
+  }, []);
+
+  const loadAccounts = () => {
+    const allAccounts = accountStorage.getAll();
+    setAccounts(allAccounts);
+  };
+
+  // Фильтрация аккаунтов
+  const filteredAccounts = accounts.filter(account => {
+    const matchesSearch = account.email.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesStatus = statusFilter === 'all' || account.status === statusFilter;
+    const matchesCountry = countryFilter === 'all' || account.country === countryFilter;
+    
+    return matchesSearch && matchesStatus && matchesCountry;
+  });
 
   const handleCreateAccount = () => {
-    alert('Функция создания аккаунта будет добавлена в следующей версии');
+    setSelectedAccount(null);
+    setIsCreateModalOpen(true);
   };
 
-  const handleEditAccount = (account: any) => {
-    alert(`Редактирование аккаунта ${account.email} будет добавлено в следующей версии`);
+  const handleEditAccount = (account) => {
+    setSelectedAccount(account);
+    setIsEditModalOpen(true);
   };
 
-  const handleDeleteAccount = (accountId: number) => {
+  const handleDeleteAccount = (accountId) => {
     if (window.confirm('Вы уверены, что хотите удалить этот аккаунт?')) {
-      alert('Функция удаления аккаунта будет добавлена в следующей версии');
+      try {
+        accountStorage.delete(accountId);
+        loadAccounts();
+        alert('Аккаунт успешно удален!');
+      } catch (error) {
+        alert('Ошибка при удалении аккаунта: ' + error.message);
+      }
     }
   };
 
-  const handleVerifyAccount = (accountId: number, phoneNumber: string) => {
+  const handleVerifyAccount = (accountId, phoneNumber) => {
     alert(`Верификация аккаунта ${accountId} с номером ${phoneNumber} будет добавлена в следующей версии`);
   };
 
-  const handleStartWarming = (accountId: number) => {
-    alert(`Прогрев аккаунта ${accountId} будет добавлен в следующей версии`);
+  const handleStartWarming = (accountId) => {
+    const account = accountStorage.getById(accountId);
+    if (account) {
+      try {
+        accountStorage.save({
+          ...account,
+          status: 'warming_up'
+        });
+        loadAccounts();
+        alert(`Прогрев аккаунта ${account.email} запущен!`);
+      } catch (error) {
+        alert('Ошибка при запуске прогрева: ' + error.message);
+      }
+    }
   };
 
-  const handleChangePassword = (accountId: number, newPassword: string) => {
+  const handleChangePassword = (accountId, newPassword) => {
     alert(`Смена пароля для аккаунта ${accountId} будет добавлена в следующей версии`);
   };
 
-  const getStatusIcon = (status: string) => {
+  const handleSaveAccount = async (accountData) => {
+    setLoading(true);
+    try {
+      accountStorage.save(accountData);
+      loadAccounts();
+      setIsCreateModalOpen(false);
+      setIsEditModalOpen(false);
+      setSelectedAccount(null);
+      alert(accountData.id ? 'Аккаунт обновлен!' : 'Аккаунт создан!');
+    } catch (error) {
+      alert('Ошибка при сохранении аккаунта: ' + error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCancelModal = () => {
+    setIsCreateModalOpen(false);
+    setIsEditModalOpen(false);
+    setSelectedAccount(null);
+  };
+
+  const getStatusIcon = (status) => {
     switch (status) {
       case 'active':
         return <CheckCircle className="h-4 w-4 text-green-500" />;
@@ -94,7 +129,7 @@ const Accounts = () => {
     }
   };
 
-  const getStatusText = (status: string) => {
+  const getStatusText = (status) => {
     switch (status) {
       case 'active':
         return 'Активный';
@@ -203,7 +238,7 @@ const Accounts = () => {
       <div className="card">
         <div className="card-header">
           <h3 className="text-lg font-medium text-gray-900">
-            Аккаунты ({accounts.length})
+            Аккаунты ({filteredAccounts.length})
           </h3>
         </div>
         <div className="card-body p-0">
@@ -235,7 +270,7 @@ const Accounts = () => {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {accounts.map((account) => (
+                {filteredAccounts.map((account) => (
                   <tr key={account.id}>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
@@ -302,6 +337,35 @@ const Accounts = () => {
           </div>
         </div>
       </div>
+
+      {/* Create Account Modal */}
+      <Modal
+        isOpen={isCreateModalOpen}
+        onClose={handleCancelModal}
+        title="Создать новый аккаунт"
+        size="md"
+      >
+        <AccountForm
+          onSubmit={handleSaveAccount}
+          onCancel={handleCancelModal}
+          loading={loading}
+        />
+      </Modal>
+
+      {/* Edit Account Modal */}
+      <Modal
+        isOpen={isEditModalOpen}
+        onClose={handleCancelModal}
+        title="Редактировать аккаунт"
+        size="md"
+      >
+        <AccountForm
+          initialData={selectedAccount}
+          onSubmit={handleSaveAccount}
+          onCancel={handleCancelModal}
+          loading={loading}
+        />
+      </Modal>
     </div>
   );
 };

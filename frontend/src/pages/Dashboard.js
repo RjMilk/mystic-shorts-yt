@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Users, 
   Video, 
@@ -9,21 +9,30 @@ import {
   Clock,
   Upload
 } from 'lucide-react';
+import { getStats } from '../utils/storage';
 
 const Dashboard = () => {
-  // Mock data for demonstration
-  const stats = {
-    totalAccounts: 12,
-    activeAccounts: 8,
-    totalVideos: 45,
-    workingProxies: 5,
-    totalViews: 12500,
-    todayErrors: 2,
-    warmingAccounts: 3,
-    bannedAccounts: 1,
-    todayVideos: 3,
-    todayAccounts: 1,
-    todayViews: 450
+  const [stats, setStats] = useState({
+    totalAccounts: 0,
+    activeAccounts: 0,
+    totalVideos: 0,
+    workingProxies: 0,
+    totalViews: 0,
+    todayErrors: 0,
+    warmingAccounts: 0,
+    bannedAccounts: 0,
+    todayVideos: 0,
+    todayAccounts: 0,
+    todayViews: 0
+  });
+
+  useEffect(() => {
+    loadStats();
+  }, []);
+
+  const loadStats = () => {
+    const currentStats = getStats();
+    setStats(currentStats);
   };
 
   const statsCards = [
@@ -200,7 +209,15 @@ const Dashboard = () => {
         {/* System Health */}
         <div className="card">
           <div className="card-header">
-            <h3 className="text-lg font-medium text-gray-900">Состояние системы</h3>
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-medium text-gray-900">Состояние системы</h3>
+              <button
+                onClick={loadStats}
+                className="btn btn-outline btn-sm"
+              >
+                🔄 Обновить
+              </button>
+            </div>
           </div>
           <div className="card-body">
             <div className="space-y-4">
