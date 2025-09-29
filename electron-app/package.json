@@ -24,7 +24,7 @@
       "preload.js",
       "api-server.js",
       "backend/**/*",
-      "frontend/build/**/*",
+      "frontend-build/**/*",
       "node_modules/**/*"
     ],
     "mac": {

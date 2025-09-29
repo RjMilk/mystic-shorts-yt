@@ -187,7 +187,7 @@ function startExpressServer() {
   const expressApp = express();
   
   expressApp.use(cors());
-  expressApp.use(express.static(path.join(__dirname, '../frontend/build')));
+  expressApp.use(express.static(path.join(__dirname, 'frontend-build')));
   
   // Proxy API requests to our built-in API server
   expressApp.use('/api', (req, res) => {
