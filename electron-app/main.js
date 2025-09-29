@@ -1,13 +1,11 @@
 const { app, BrowserWindow, Menu, shell, dialog, ipcMain } = require('electron');
 const path = require('path');
-const { spawn } = require('child_process');
 const express = require('express');
 const cors = require('cors');
+const apiServer = require('./api-server');
 
 // Keep a global reference of the window object
 let mainWindow;
-let backendProcess;
-let frontendProcess;
 let expressServer;
 
 // Backend and Frontend ports
@@ -151,11 +149,8 @@ function startServices() {
   // Start Express server to serve the frontend
   startExpressServer();
 
-  // Start Python backend
-  startBackend();
-
-  // Start React frontend
-  startFrontend();
+  // Note: Backend and Frontend are now built-in, no external processes needed
+  console.log('✅ All services are built-in and ready!');
 }
 
 function startExpressServer() {
@@ -164,23 +159,40 @@ function startExpressServer() {
   expressApp.use(cors());
   expressApp.use(express.static(path.join(__dirname, '../frontend/build')));
   
-  // Proxy API requests to backend
+  // Proxy API requests to our built-in API server
   expressApp.use('/api', (req, res) => {
-    const { spawn } = require('child_process');
-    const curl = spawn('curl', [
-      '-X', req.method,
-      `http://localhost:${BACKEND_PORT}${req.path}`,
-      '-H', 'Content-Type: application/json',
-      '-d', JSON.stringify(req.body)
-    ]);
+    const http = require('http');
     
-    curl.stdout.on('data', (data) => {
-      res.send(data);
+    const options = {
+      hostname: 'localhost',
+      port: BACKEND_PORT,
+      path: req.path,
+      method: req.method,
+      headers: {
+        'Content-Type': 'application/json',
+        'Content-Length': Buffer.byteLength(JSON.stringify(req.body))
+      }
+    };
+    
+    const proxyReq = http.request(options, (proxyRes) => {
+      let data = '';
+      proxyRes.on('data', (chunk) => {
+        data += chunk;
+      });
+      proxyRes.on('end', () => {
+        res.status(proxyRes.statusCode).send(data);
+      });
     });
     
-    curl.stderr.on('data', (data) => {
-      console.error('Backend error:', data.toString());
+    proxyReq.on('error', (err) => {
+      console.error('API Proxy error:', err);
+      res.status(500).json({ error: 'API server unavailable' });
     });
+    
+    if (req.body) {
+      proxyReq.write(JSON.stringify(req.body));
+    }
+    proxyReq.end();
   });
 
   expressServer = expressApp.listen(EXPRESS_PORT, () => {
@@ -188,65 +200,14 @@ function startExpressServer() {
   });
 }
 
-function startBackend() {
-  const backendPath = path.join(__dirname, '../backend');
-  
-  console.log('🐍 Starting Python backend...');
-  
-  backendProcess = spawn('python3', ['main.py'], {
-    cwd: backendPath,
-    stdio: 'pipe'
-  });
-
-  backendProcess.stdout.on('data', (data) => {
-    console.log('Backend:', data.toString());
-  });
-
-  backendProcess.stderr.on('data', (data) => {
-    console.error('Backend error:', data.toString());
-  });
-
-  backendProcess.on('close', (code) => {
-    console.log(`Backend process exited with code ${code}`);
-  });
-}
-
-function startFrontend() {
-  const frontendPath = path.join(__dirname, '../frontend');
-  
-  console.log('⚛️ Starting React frontend...');
-  
-  frontendProcess = spawn('npm', ['start'], {
-    cwd: frontendPath,
-    stdio: 'pipe',
-    shell: true
-  });
-
-  frontendProcess.stdout.on('data', (data) => {
-    console.log('Frontend:', data.toString());
-  });
-
-  frontendProcess.stderr.on('data', (data) => {
-    console.error('Frontend error:', data.toString());
-  });
-
-  frontendProcess.on('close', (code) => {
-    console.log(`Frontend process exited with code ${code}`);
-  });
-}
+// Backend and Frontend are now built-in, no external processes needed
 
 // This method will be called when Electron has finished initialization
 app.whenReady().then(createWindow);
 
 // Quit when all windows are closed
 app.on('window-all-closed', () => {
-  // Kill all processes
-  if (backendProcess) {
-    backendProcess.kill();
-  }
-  if (frontendProcess) {
-    frontendProcess.kill();
-  }
+  // Close Express server
   if (expressServer) {
     expressServer.close();
   }
@@ -268,12 +229,6 @@ app.on('activate', () => {
 app.on('before-quit', () => {
   console.log('🛑 Shutting down services...');
   
-  if (backendProcess) {
-    backendProcess.kill();
-  }
-  if (frontendProcess) {
-    frontendProcess.kill();
-  }
   if (expressServer) {
     expressServer.close();
   }
