@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+const API_BASE_URL = process.env.REACT_APP_API_URL || '';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -100,6 +100,6 @@ export const getSettings = () => api.get('/api/settings');
 export const updateSettings = (data: any) => api.put('/api/settings', data);
 
 // Health check
-export const healthCheck = () => api.get('/health');
+export const healthCheck = () => api.get('/api/health');
 
 export default api;
