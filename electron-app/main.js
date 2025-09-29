@@ -187,46 +187,122 @@ function startExpressServer() {
   const expressApp = express();
   
   expressApp.use(cors());
+  expressApp.use(express.json());
   expressApp.use(express.static(path.join(__dirname, 'frontend-build')));
   
-  // Proxy API requests to our built-in API server
-  expressApp.use('/api', (req, res) => {
-    const http = require('http');
-    
-    const options = {
-      hostname: 'localhost',
-      port: BACKEND_PORT,
-      path: req.path,
-      method: req.method,
-      headers: {
-        'Content-Type': 'application/json',
-        'Content-Length': Buffer.byteLength(JSON.stringify(req.body))
-      }
+  // Mock data for demonstration
+  const accounts = [];
+  const videos = [];
+  const stats = {
+    totalAccounts: 0,
+    activeAccounts: 0,
+    totalVideos: 0,
+    successRate: 0
+  };
+
+  // API Routes
+  expressApp.get('/api/health', (req, res) => {
+    res.json({ status: 'ok', message: 'Mystic Shorts YT API is running' });
+  });
+
+  // Accounts API
+  expressApp.get('/api/accounts', (req, res) => {
+    res.json(accounts);
+  });
+
+  expressApp.post('/api/accounts', (req, res) => {
+    const account = {
+      id: Date.now(),
+      email: req.body.email,
+      password: req.body.password,
+      country: req.body.country,
+      proxy: req.body.proxy,
+      status: 'active',
+      createdAt: new Date().toISOString()
     };
+    accounts.push(account);
+    stats.totalAccounts = accounts.length;
+    stats.activeAccounts = accounts.filter(acc => acc.status === 'active').length;
+    res.json(account);
+  });
+
+  expressApp.put('/api/accounts/:id', (req, res) => {
+    const accountId = parseInt(req.params.id);
+    const accountIndex = accounts.findIndex(acc => acc.id === accountId);
     
-    const proxyReq = http.request(options, (proxyRes) => {
-      let data = '';
-      proxyRes.on('data', (chunk) => {
-        data += chunk;
-      });
-      proxyRes.on('end', () => {
-        res.status(proxyRes.statusCode).send(data);
-      });
-    });
-    
-    proxyReq.on('error', (err) => {
-      console.error('API Proxy error:', err);
-      res.status(500).json({ error: 'API server unavailable' });
-    });
-    
-    if (req.body) {
-      proxyReq.write(JSON.stringify(req.body));
+    if (accountIndex === -1) {
+      return res.status(404).json({ error: 'Account not found' });
     }
-    proxyReq.end();
+    
+    accounts[accountIndex] = { ...accounts[accountIndex], ...req.body };
+    res.json(accounts[accountIndex]);
+  });
+
+  expressApp.delete('/api/accounts/:id', (req, res) => {
+    const accountId = parseInt(req.params.id);
+    const accountIndex = accounts.findIndex(acc => acc.id === accountId);
+    
+    if (accountIndex === -1) {
+      return res.status(404).json({ error: 'Account not found' });
+    }
+    
+    accounts.splice(accountIndex, 1);
+    stats.totalAccounts = accounts.length;
+    stats.activeAccounts = accounts.filter(acc => acc.status === 'active').length;
+    res.json({ message: 'Account deleted successfully' });
+  });
+
+  // Videos API
+  expressApp.get('/api/videos', (req, res) => {
+    res.json(videos);
+  });
+
+  expressApp.post('/api/videos', (req, res) => {
+    const video = {
+      id: Date.now(),
+      title: req.body.title,
+      description: req.body.description,
+      filePath: req.body.filePath,
+      accountId: req.body.accountId,
+      status: 'pending',
+      createdAt: new Date().toISOString()
+    };
+    videos.push(video);
+    stats.totalVideos = videos.length;
+    res.json(video);
+  });
+
+  // Stats API
+  expressApp.get('/api/stats', (req, res) => {
+    res.json(stats);
+  });
+
+  // Settings API
+  expressApp.get('/api/settings', (req, res) => {
+    res.json({
+      telegramBotToken: '',
+      telegramChatId: '',
+      youtubeApiKey: '',
+      captchaApiKey: '',
+      captchaService: '2captcha',
+      defaultCountry: 'US',
+      maxConcurrentUploads: 3
+    });
+  });
+
+  expressApp.put('/api/settings', (req, res) => {
+    res.json({ message: 'Settings updated successfully' });
+  });
+
+  // Error handling
+  expressApp.use((err, req, res, next) => {
+    console.error('API Error:', err);
+    res.status(500).json({ error: 'Internal server error' });
   });
 
   expressServer = expressApp.listen(EXPRESS_PORT, () => {
     console.log(`📡 Express server running on port ${EXPRESS_PORT}`);
+    console.log(`🚀 API server ready at http://localhost:${EXPRESS_PORT}/api`);
   });
 }
 
