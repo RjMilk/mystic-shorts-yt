@@ -12,7 +12,7 @@ function App() {
 
   const checkBackendStatus = async () => {
     try {
-      const response = await fetch('http://localhost:8000/health');
+      const response = await fetch('/api/health');
       if (response.ok) {
         setBackendStatus('✅ Backend работает');
       } else {
