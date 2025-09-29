@@ -1,6 +1,6 @@
 {
   "name": "mystic-shorts-yt-app",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "Mystic Shorts YT - YouTube Account Management Tool",
   "main": "main.js",
   "scripts": {
