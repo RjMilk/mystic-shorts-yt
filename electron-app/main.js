@@ -201,13 +201,8 @@ function startExpressServer() {
   // Serve static files from frontend-build
   const frontendPath = path.join(__dirname, 'frontend-build');
   console.log('📁 Frontend path:', frontendPath);
+  console.log('🌐 Starting Express server on port:', EXPRESS_PORT);
   expressApp.use(express.static(frontendPath));
-  
-  // Fallback to index.html for SPA routing
-  expressApp.get('*', (req, res) => {
-    console.log('🔄 Fallback route:', req.path);
-    res.sendFile(path.join(frontendPath, 'index.html'));
-  });
   
   // Mock data for demonstration
   const accounts = [];
@@ -219,7 +214,7 @@ function startExpressServer() {
     successRate: 0
   };
 
-  // API Routes
+  // API Routes (must be defined BEFORE fallback route)
   expressApp.get('/api/health', (req, res) => {
     res.json({ status: 'ok', message: 'Mystic Shorts YT API is running' });
   });
@@ -313,6 +308,12 @@ function startExpressServer() {
     res.json({ message: 'Settings updated successfully' });
   });
 
+  // Fallback to index.html for SPA routing (must be AFTER all API routes)
+  expressApp.get('*', (req, res) => {
+    console.log('🔄 Fallback route:', req.path);
+    res.sendFile(path.join(frontendPath, 'index.html'));
+  });
+
   // Error handling
   expressApp.use((err, req, res, next) => {
     console.error('API Error:', err);
@@ -322,6 +323,10 @@ function startExpressServer() {
   expressServer = expressApp.listen(EXPRESS_PORT, () => {
     console.log(`📡 Express server running on port ${EXPRESS_PORT}`);
     console.log(`🚀 API server ready at http://localhost:${EXPRESS_PORT}/api`);
+  });
+
+  expressServer.on('error', (error) => {
+    console.error('❌ Express server error:', error);
   });
 }
 
