@@ -9,6 +9,7 @@
     "build-mac": "electron-builder --mac",
     "build-win": "electron-builder --win",
     "build-linux": "electron-builder --linux",
+    "build-portable": "electron-builder --dir",
     "dist": "npm run build",
     "pack": "electron-builder --dir",
     "postinstall": "electron-builder install-app-deps"
@@ -36,6 +37,10 @@
         },
         {
           "target": "zip",
+          "arch": ["x64", "arm64"]
+        },
+        {
+          "target": "dir",
           "arch": ["x64", "arm64"]
         }
       ],

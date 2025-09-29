@@ -3,7 +3,6 @@ const path = require('path');
 const express = require('express');
 const cors = require('cors');
 const net = require('net');
-const apiServer = require('./api-server');
 
 // Keep a global reference of the window object
 let mainWindow;
@@ -59,16 +58,26 @@ async function createWindow() {
   await startServices();
 
   // Load the app
-  mainWindow.loadURL(`http://localhost:${EXPRESS_PORT}`);
+  const appUrl = `http://localhost:${EXPRESS_PORT}`;
+  console.log('🌐 Loading app from:', appUrl);
+  mainWindow.loadURL(appUrl);
 
   // Show window when ready
   mainWindow.once('ready-to-show', () => {
+    console.log('✅ Window ready to show');
     mainWindow.show();
     
-    // Open DevTools in development
-    if (process.env.NODE_ENV === 'development') {
-      mainWindow.webContents.openDevTools();
-    }
+    // Always open DevTools for debugging
+    mainWindow.webContents.openDevTools();
+  });
+
+  // Handle page load events
+  mainWindow.webContents.on('did-finish-load', () => {
+    console.log('✅ Page finished loading');
+  });
+
+  mainWindow.webContents.on('did-fail-load', (event, errorCode, errorDescription) => {
+    console.error('❌ Page failed to load:', errorCode, errorDescription);
   });
 
   // Handle window closed
@@ -188,7 +197,17 @@ function startExpressServer() {
   
   expressApp.use(cors());
   expressApp.use(express.json());
-  expressApp.use(express.static(path.join(__dirname, 'frontend-build')));
+  
+  // Serve static files from frontend-build
+  const frontendPath = path.join(__dirname, 'frontend-build');
+  console.log('📁 Frontend path:', frontendPath);
+  expressApp.use(express.static(frontendPath));
+  
+  // Fallback to index.html for SPA routing
+  expressApp.get('*', (req, res) => {
+    console.log('🔄 Fallback route:', req.path);
+    res.sendFile(path.join(frontendPath, 'index.html'));
+  });
   
   // Mock data for demonstration
   const accounts = [];
