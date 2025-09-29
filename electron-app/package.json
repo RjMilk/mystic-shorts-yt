@@ -22,6 +22,7 @@
     "files": [
       "main.js",
       "preload.js",
+      "api-server.js",
       "backend/**/*",
       "frontend/build/**/*",
       "node_modules/**/*"
