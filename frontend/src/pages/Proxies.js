@@ -80,11 +80,17 @@ const Proxies = () => {
           </p>
         </div>
         <div className="mt-4 flex md:ml-4 md:mt-0 space-x-3">
-          <button className="btn btn-outline">
+          <button 
+            className="btn btn-outline"
+            onClick={() => alert('Функция тестирования прокси будет добавлена в следующей версии')}
+          >
             <RefreshCw className="h-4 w-4 mr-2" />
             Тестировать все
           </button>
-          <button className="btn btn-primary">
+          <button 
+            className="btn btn-primary"
+            onClick={() => alert('Функция добавления прокси будет добавлена в следующей версии')}
+          >
             <Plus className="h-4 w-4 mr-2" />
             Добавить прокси
           </button>
@@ -209,13 +215,29 @@ const Proxies = () => {
                     {getStatusText(proxy.status)}
                   </span>
                   <div className="flex space-x-1">
-                    <button className="text-gray-400 hover:text-gray-600">
+                    <button 
+                      className="text-gray-400 hover:text-gray-600"
+                      onClick={() => alert(`Тестирование прокси ${proxy.host}:${proxy.port} (демо)`)}
+                      title="Тестировать прокси"
+                    >
                       <RefreshCw className="h-4 w-4" />
                     </button>
-                    <button className="text-gray-400 hover:text-gray-600">
+                    <button 
+                      className="text-gray-400 hover:text-gray-600"
+                      onClick={() => alert(`Редактирование прокси ${proxy.host}:${proxy.port} (демо)`)}
+                      title="Редактировать прокси"
+                    >
                       <Edit className="h-4 w-4" />
                     </button>
-                    <button className="text-gray-400 hover:text-red-600">
+                    <button 
+                      className="text-gray-400 hover:text-red-600"
+                      onClick={() => {
+                        if (window.confirm(`Удалить прокси ${proxy.host}:${proxy.port}?`)) {
+                          alert('Прокси удален! (демо)');
+                        }
+                      }}
+                      title="Удалить прокси"
+                    >
                       <Trash2 className="h-4 w-4" />
                     </button>
                   </div>

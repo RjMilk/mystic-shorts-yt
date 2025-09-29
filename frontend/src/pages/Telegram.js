@@ -60,7 +60,10 @@ const Telegram = () => {
             </div>
           </div>
           <button
-            onClick={handleTestConnection}
+            onClick={() => {
+              setIsConnected(true);
+              alert('Telegram бот подключен! (демо)');
+            }}
             className="btn btn-outline"
           >
             <Phone className="h-4 w-4 mr-2" />
@@ -105,12 +108,15 @@ const Telegram = () => {
               ID чата или канала для получения уведомлений
             </p>
           </div>
-          <div className="flex space-x-3">
-            <button className="btn btn-primary">
-              <Settings className="h-4 w-4 mr-2" />
-              Сохранить настройки
-            </button>
-          </div>
+            <div className="flex space-x-3">
+              <button 
+                className="btn btn-primary"
+                onClick={() => alert('Настройки Telegram сохранены! (демо)')}
+              >
+                <Settings className="h-4 w-4 mr-2" />
+                Сохранить настройки
+              </button>
+            </div>
         </div>
       </div>
 
@@ -133,7 +139,7 @@ const Telegram = () => {
             />
           </div>
           <button
-            onClick={handleSendTestMessage}
+            onClick={() => alert('Тестовое сообщение отправлено! (демо)')}
             className="btn btn-outline"
           >
             <Send className="h-4 w-4 mr-2" />

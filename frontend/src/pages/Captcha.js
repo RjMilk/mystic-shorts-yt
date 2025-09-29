@@ -54,7 +54,11 @@ const Captcha = () => {
             </div>
           </div>
           <button
-            onClick={handleTestConnection}
+            onClick={() => {
+              setIsConnected(true);
+              setBalance(15.50);
+              alert('Сервис капчи подключен! (демо)');
+            }}
             className="btn btn-outline"
           >
             <Bot className="h-4 w-4 mr-2" />
@@ -103,16 +107,25 @@ const Captcha = () => {
               Получите API ключ у вашего провайдера капчи (2captcha, Anti-Captcha и т.д.)
             </p>
           </div>
-          <div className="flex space-x-3">
-            <button className="btn btn-primary">
-              <Settings className="h-4 w-4 mr-2" />
-              Сохранить настройки
-            </button>
-            <button className="btn btn-outline">
-              <RefreshCw className="h-4 w-4 mr-2" />
-              Обновить баланс
-            </button>
-          </div>
+            <div className="flex space-x-3">
+              <button 
+                className="btn btn-primary"
+                onClick={() => alert('Настройки капчи сохранены! (демо)')}
+              >
+                <Settings className="h-4 w-4 mr-2" />
+                Сохранить настройки
+              </button>
+              <button 
+                className="btn btn-outline"
+                onClick={() => {
+                  setBalance(15.50);
+                  alert('Баланс обновлен! (демо)');
+                }}
+              >
+                <RefreshCw className="h-4 w-4 mr-2" />
+                Обновить баланс
+              </button>
+            </div>
         </div>
       </div>
 

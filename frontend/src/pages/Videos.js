@@ -81,11 +81,17 @@ const Videos = () => {
           </p>
         </div>
         <div className="mt-4 flex md:ml-4 md:mt-0 space-x-3">
-          <button className="btn btn-outline">
+          <button 
+            className="btn btn-outline"
+            onClick={() => alert('Функция загрузки видео будет добавлена в следующей версии')}
+          >
             <Upload className="h-4 w-4 mr-2" />
             Загрузить видео
           </button>
-          <button className="btn btn-primary">
+          <button 
+            className="btn btn-primary"
+            onClick={() => alert('Функция создания Short будет добавлена в следующей версии')}
+          >
             <Plus className="h-4 w-4 mr-2" />
             Создать Short
           </button>
@@ -210,13 +216,29 @@ const Videos = () => {
                     {getStatusText(video.status)}
                   </span>
                   <div className="flex space-x-1">
-                    <button className="text-gray-400 hover:text-gray-600">
+                    <button 
+                      className="text-gray-400 hover:text-gray-600"
+                      onClick={() => alert(`Воспроизведение видео "${video.title}" (демо)`)}
+                      title="Воспроизвести видео"
+                    >
                       <Play className="h-4 w-4" />
                     </button>
-                    <button className="text-gray-400 hover:text-gray-600">
+                    <button 
+                      className="text-gray-400 hover:text-gray-600"
+                      onClick={() => alert(`Редактирование видео "${video.title}" (демо)`)}
+                      title="Редактировать видео"
+                    >
                       <Edit className="h-4 w-4" />
                     </button>
-                    <button className="text-gray-400 hover:text-red-600">
+                    <button 
+                      className="text-gray-400 hover:text-red-600"
+                      onClick={() => {
+                        if (window.confirm(`Удалить видео "${video.title}"?`)) {
+                          alert('Видео удалено! (демо)');
+                        }
+                      }}
+                      title="Удалить видео"
+                    >
                       <Trash2 className="h-4 w-4" />
                     </button>
                   </div>

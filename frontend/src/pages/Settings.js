@@ -37,11 +37,27 @@ const Settings = () => {
           </p>
         </div>
         <div className="mt-4 flex md:ml-4 md:mt-0 space-x-3">
-          <button className="btn btn-outline">
+          <button 
+            className="btn btn-outline"
+            onClick={() => {
+              setSettings({
+                maxConcurrentUploads: 3,
+                uploadDelay: 30,
+                retryAttempts: 3,
+                autoWarmup: true,
+                notifications: true,
+                logLevel: 'info'
+              });
+              alert('Настройки сброшены! (демо)');
+            }}
+          >
             <RefreshCw className="h-4 w-4 mr-2" />
             Сбросить
           </button>
-          <button onClick={handleSave} className="btn btn-primary">
+          <button 
+            onClick={() => alert('Настройки сохранены! (демо)')} 
+            className="btn btn-primary"
+          >
             <Save className="h-4 w-4 mr-2" />
             Сохранить
           </button>
