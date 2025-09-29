@@ -1,6 +1,6 @@
 @echo off
-echo 🚀 Запуск Mystic Shorts YT (Windows)...
-echo ======================================
+echo 🚀 Запуск Mystic Shorts YT (Windows) - Исправленная версия
+echo =========================================================
 
 REM Проверяем Python
 python --version >nul 2>&1
@@ -25,8 +25,15 @@ echo ✅ Python и Node.js найдены
 REM Создаем виртуальное окружение для backend
 echo 🐍 Настройка Python окружения...
 cd backend
+
+REM Удаляем старое виртуальное окружение если есть
+if exist venv rmdir /s /q venv
+
 python -m venv venv
 call venv\Scripts\activate.bat
+
+echo 📦 Установка зависимостей Python...
+pip install --upgrade pip
 pip install -r requirements.txt
 
 REM Создаем .env файл с базовыми настройками
@@ -54,27 +61,26 @@ REM Создаем необходимые папки
 if not exist uploads mkdir uploads
 if not exist temp mkdir temp
 if not exist logs mkdir logs
+if not exist static mkdir static
+
+REM Создаем простой favicon.ico
+echo 📄 Создание favicon.ico...
+echo. > static\favicon.ico
 
 echo 🔧 Запуск Backend...
 start "Backend" cmd /k "call venv\Scripts\activate.bat && python main.py"
 
-REM Ждем немного, чтобы backend запустился
-echo ⏳ Ожидание запуска backend...
-timeout /t 8 /nobreak >nul
-
-REM Проверяем, что backend запустился
-echo 🔍 Проверка backend...
-curl -s http://localhost:8000/health >nul 2>&1
-if %errorlevel% neq 0 (
-    echo ⚠️  Backend может быть еще не готов, но продолжаем...
-) else (
-    echo ✅ Backend запущен успешно
-)
+REM Ждем больше времени для запуска backend
+echo ⏳ Ожидание запуска backend (10 секунд)...
+timeout /t 10 /nobreak >nul
 
 REM Переходим в frontend
 cd ..\frontend
 
-echo 📦 Установка зависимостей Frontend...
+echo 📦 Очистка и установка зависимостей Frontend...
+if exist node_modules rmdir /s /q node_modules
+if exist package-lock.json del package-lock.json
+
 call npm install
 
 echo 🎨 Запуск Frontend...
@@ -87,5 +93,7 @@ echo 🌐 Frontend: http://localhost:3000
 echo 🔧 Backend API: http://localhost:8000
 echo.
 echo 📝 Для остановки закройте окна терминалов
+echo.
+echo ⚠️  Если возникают ошибки proxy, подождите 30 секунд и обновите страницу
 echo.
 pause

@@ -6,10 +6,13 @@ Mystic Shorts YT - Backend API
 from fastapi import FastAPI, HTTPException, Depends, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPBearer
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 import uvicorn
 from contextlib import asynccontextmanager
 import asyncio
 import logging
+import os
 
 from database.database import init_db
 from config.settings import get_settings
@@ -40,6 +43,9 @@ app = FastAPI(
     lifespan=lifespan
 )
 
+# Подключение статических файлов
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
 # Настройка CORS
 app.add_middleware(
     CORSMiddleware,
@@ -69,6 +75,12 @@ async def root():
 async def health_check():
     """Проверка состояния API"""
     return {"status": "healthy"}
+
+@app.get("/favicon.ico")
+async def favicon():
+    """Обработка favicon.ico для избежания proxy ошибок"""
+    # Возвращаем пустой ответ с правильным content-type
+    return FileResponse("static/favicon.ico" if os.path.exists("static/favicon.ico") else None, media_type="image/x-icon")
 
 if __name__ == "__main__":
     uvicorn.run(
